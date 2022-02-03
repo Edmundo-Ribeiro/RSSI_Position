@@ -7,10 +7,22 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Classe para simplificar manipulações com varios APs e acomodar todas as funções que precisam utilizar um número indefinido de APs simultanamente
+ */
 public class APs extends HashMap<String,AP>{
+
+    /**
+     * Contruto vazio
+     */
     public APs(){
         super();
     }
+
+    /**
+     * Construtor alternativo, cria dicionário hashmap com funcionalidades especificas
+     * @param apArray vetor com os AP instanciados
+     */
     public APs(AP[] apArray){
         super();
         for(AP ap : apArray){
@@ -18,12 +30,20 @@ public class APs extends HashMap<String,AP>{
         }
     }
 
+    /**
+     * Conta quantos Aps tem o valor de rssi diferente do {@code #RSSI_PLACEHOLDER}
+     * @return número total de Aps que o valor do rssi não está setado como {@code #RSSI_PLACEHOLDER}
+     */
     public int countAvailableAPs(){
         AtomicInteger count = new AtomicInteger();
         this.forEach((mac,ap)-> count.addAndGet(ap.hasMeasure() ? 1 : 0));
         return count.get();
     }
 
+    /**
+     * Filtra os conjunto de Aps atual e retorna um subconjunto contendo apenas os aps em que o rssi foi setado como sendo diferente de {@code #RSSI_PLACEHOLDER}
+     * @return subconjunto do mapa original
+     */
     public APs getAvailableAPs(){
         APs subMap = new APs();
         this.forEach((mac,ap)-> {
@@ -34,21 +54,9 @@ public class APs extends HashMap<String,AP>{
         return subMap;
     }
 
-    public Vector3D getWeightedAveragePosition(){
-        APs subset = this.getAvailableAPs();
-
-        Vector3D wavPosition = new Vector3D(0f,0f,0f);
-        float weightSum = 0f;
-
-        for(AP ap : subset.values()){
-            float weight = 1/ap.rssiToDistance();
-            wavPosition.add(ap.getPosition().scalarMultiply(weight));
-            weightSum += weight;
-        }
-
-        return wavPosition.scalarMultiply(1/ weightSum);
-    }
-
+    /**
+     * Seta o rssi dos aps para o valor de  {@code #RSSI_PLACEHOLDER}
+     */
     public void resetAps() {
         this.forEach((mac,ap)-> ap.resetRssi());
     }

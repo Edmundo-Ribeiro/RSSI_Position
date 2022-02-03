@@ -122,7 +122,7 @@ public class PositionEstimator {
      * @return problema de minimos quadrados construido com base nas informações extraidas de {@code aps}
      */
     private LeastSquaresProblem setupProblem(APs aps) {
-        double[] initialValues = aps.getWeightedAveragePosition().toArray(); //calcular ponto inicial
+        double[] initialValues = getWeightedAveragePosition(aps).toArray(); //calcular ponto inicial
         double [] targetDistances = getDistances(aps); // obter a coleção de dados que será usada de referencia no minimos quadrados
         RealMatrix weightMatrix = getWeights(aps); // obter pesos que serão aplicados aos resido nos minimos quadrados
 
@@ -140,6 +140,24 @@ public class PositionEstimator {
                 build();
     }
 
+    /**
+     * Calcula e retona vetor 3D correspondente a media ponderada das posições dos Aps contidos em {@code aps}
+     * @param aps objeto referente ao mapa de APs cadastrados
+     * @return vetor 3D correspondente a media ponderada das posições dos Aps
+     */
+    public Vector3D getWeightedAveragePosition(APs aps){
+
+        Vector3D wavPosition = new Vector3D(0f,0f,0f);
+        float weightSum = 0f;
+
+        for(AP ap : aps.values()){
+            float weight = 1/ap.rssiToDistance();
+            wavPosition.add(ap.getPosition().scalarMultiply(weight));
+            weightSum += weight;
+        }
+
+        return wavPosition.scalarMultiply(1/ weightSum);
+    }
     /**
      * Calcula e retorna uma matriz de 3 colunas e n linhas (n sendo a quantidade de Aps inicializados com rssi).
      * essa matriz contem os pesos que serão aplicados a cada residuo no calculo dos minimos quasdrados, sendo que esse peso
