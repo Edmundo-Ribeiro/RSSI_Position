@@ -41,7 +41,7 @@ public class APs extends HashMap<String,AP>{
     }
 
     /**
-     * Filtra os conjunto de Aps atual e retorna um subconjunto contendo apenas os aps em que o rssi foi setado como sendo diferente de {@code #RSSI_PLACEHOLDER}
+     * Filtra o conjunto de Aps atual e retorna um subconjunto contendo apenas os aps em que o rssi foi setado com valor diferente de {@code #RSSI_PLACEHOLDER}
      * @return subconjunto do mapa original
      */
     public APs getAvailableAPs(){

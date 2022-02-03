@@ -8,7 +8,7 @@ public class AP {
     private final int RSSI_PLACEHOLDER = 1;
 
     private String name,mac;
-    private float alpha,A;
+    private double alpha,A;
     private Vector3D position;
     private int lastRssiMeasured;
 
@@ -22,7 +22,7 @@ public class AP {
      * @param _alpha Coeficiente de atenuação de sinal calculado para o AP, conforme o modelo de propagação de sinal
      * @param _A Parametro linear calculado para o AP, conforme o modelo de propagação de sinal
      */
-    public AP(String _name, String _mac, float _x, float _y, float _z, float _alpha, float _A){
+    public AP(String _name, String _mac, double _x, double _y, double _z, double _alpha, double _A){
         name = _name;
         mac = _mac;
         position = new Vector3D(_x,_y,_z);

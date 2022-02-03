@@ -17,6 +17,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
 
 import java.lang.reflect.Array;
+import java.util.Set;
 
 /**
  * Classe com o objetivo de concentrar o código referente a utilização dos dados
@@ -26,11 +27,11 @@ public class PositionEstimator {
     Vector3D[] apPositions;
     String[] order;
 
-    public void setApPositions(Vector3D[] apPositions) {
+    private void setApPositions(Vector3D[] apPositions) {
         this.apPositions = apPositions;
     }
 
-    public void setOrder(String[] order) {
+    private void setOrder(String[] order) {
         this.order = order;
     }
 
@@ -43,7 +44,7 @@ public class PositionEstimator {
      * ponto está ou não dentro do layou (problema Point in Polygon)}
      *
      */
-    ParameterValidator checkConstrainsValidator = new ParameterValidator(){
+   private ParameterValidator checkConstrainsValidator = new ParameterValidator(){
         public RealVector validate(final RealVector point){
             RealVector aux = new ArrayRealVector(point.getDimension());
             double entry;
@@ -67,7 +68,7 @@ public class PositionEstimator {
      * A função implementada é a equação de esfera
      * o jacobiano é a derivada parcial com relação a x,y,z
      */
-    MultivariateJacobianFunction getResidualsAndJacobian = new MultivariateJacobianFunction() {
+    private MultivariateJacobianFunction getResidualsAndJacobian = new MultivariateJacobianFunction() {
 
         public Pair<RealVector, RealMatrix> value(final RealVector point) {
             //obter estimativa atual da posição
@@ -85,13 +86,13 @@ public class PositionEstimator {
                 double model = Vector3D.distance(routerPosition, estimatedPosition); //equação r = sqrt ( (x - xo)² + (y - yo)² +(z - zo)² )
                 modelValues.setEntry(i, model);
 
-                double inverseResidual = model != 0 ? (1/ model) : 0; //lidar com divisões por zero
+                double inverseModel = model != 0 ? (1/ model) : 0; //lidar com divisões por zero
                 //derivada parcial dr/dx = (x - xo)/sqrt ( (x - xo)² + (y - yo)² +(z - zo)² )
-                jacobian.setEntry(i, 0, (estimatedPosition.getX() - routerPosition.getX()) * inverseResidual);
+                jacobian.setEntry(i, 0, (estimatedPosition.getX() - routerPosition.getX()) * inverseModel);
                 //...
-                jacobian.setEntry(i, 1, (estimatedPosition.getY() - routerPosition.getY()) * inverseResidual);
+                jacobian.setEntry(i, 1, (estimatedPosition.getY() - routerPosition.getY()) * inverseModel);
                 //...
-                jacobian.setEntry(i, 2, (estimatedPosition.getZ() - routerPosition.getZ()) * inverseResidual);
+                jacobian.setEntry(i, 2, (estimatedPosition.getZ() - routerPosition.getZ()) * inverseModel);
 
             }
             return new Pair<>(modelValues, jacobian);
@@ -105,8 +106,14 @@ public class PositionEstimator {
 
     }
 
+    /**
+     * Constroi, configura e realiza os calculos necessários para estimar uma posicação através dos minimos quadrados
+     * @param aps objeto referente ao mapa de APs cadastrados
+     * @return Vetor 3D com as coordenadas da posição estimada com base nos dados fornecidos.
+     */
     public Vector3D getEstimation(APs aps){
-        this.setOrder((String[]) aps.keySet().toArray());
+        Set<String> keys = aps.keySet();
+        this.setOrder(keys.toArray((new String[keys.size()])));
 
         this.setApPositions(extractApsPositions(aps));
 
