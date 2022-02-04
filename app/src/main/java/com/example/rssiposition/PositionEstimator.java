@@ -138,9 +138,9 @@ public class PositionEstimator {
         return new LeastSquaresBuilder().
                 start(initialValues).
                 model(getResidualsAndJacobian).
+                weight(weightMatrix).
                 parameterValidator(checkConstrainsValidator).
                 target(targetDistances).
-                weight(weightMatrix).
                 lazyEvaluation(false).
                 maxEvaluations(1000).
                 maxIterations(1000).
@@ -174,7 +174,7 @@ public class PositionEstimator {
      */
     private RealMatrix getWeights(APs aps){
 
-        RealMatrix weightMatrix = new Array2DRowRealMatrix(aps.size(), 3); //Instanciar matrix com os pesos necessários para os minimos quadrados
+        RealMatrix weightMatrix = new Array2DRowRealMatrix(aps.size(),aps.size() ); //Instanciar matrix com os pesos necessários para os minimos quadrados
 
         float weightSum = 0f; //inicializar variavel que guardara a soma dos pesos
         double[] weights = new double[aps.size()]; //instanciar vetor que conterá o peso de cada ap
@@ -187,13 +187,14 @@ public class PositionEstimator {
             i+=1;
         }
         //dividir todos os pesos pela soma (obter valores entre 0 e 1 para os pesos)
-        for(int j =0; j< weights.length;++j)
+        for(int j =0; j< weights.length;++j){
+
             weights[j] /= weightSum;
+            weightMatrix.setEntry(j,j,weights[j]);
+        }
 
         //colocar valores dos pesos na matrix
-        weightMatrix.setColumn(0,weights); //o peso é o mesmo para x,y,z
-        weightMatrix.setColumn(1,weights);
-        weightMatrix.setColumn(2,weights);
+
 
         return weightMatrix;
     }

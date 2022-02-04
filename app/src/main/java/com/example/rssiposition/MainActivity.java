@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.CompoundButton;
@@ -23,10 +24,13 @@ public class MainActivity extends AppCompatActivity {
     ToggleButton btnStartStop; // botao para iniciar e parar coleta
     TextView textPosition; //posição estimada
 
+    //timer para mostrar tempo restante para a proxima medida
+    private CountDownTimer timer;
+
     static AP[] registeredAps =  new AP[]{
-            new AP("roteador_vivo_5GHz"  ,"f4:54:20:5d:4c:3h" ,0.240, 1.160, 1.050, 2.49819278, 28.34613884),
+            new AP("roteador_vivo_5GHz"  ,"f4:54:20:5d:4c:3e" ,0.240, 1.160, 1.050, 2.49819278, 28.34613884),
             new AP("roteador_vivo_2GHz","f4:54:20:5d:4c:3f"  ,0.240, 1.160, 1.050, 2.53053740, 32.50116084),
-            new AP("roteador_celular", "82:7e:68:19:b6:fe"     ,5.469, 0.250, 0.450, 4.74093970, 26.02048906),
+            new AP("roteador_celular", "e6:54:20:5d:4c:3e"     ,5.469, 0.250, 0.450, 4.74093970, 26.02048906),
             new AP("roteador_oi" , "c8:5a:9f:e8:e2:c7"         ,1.000, 4.739, 0.450, 3.29406819, 35.49286952)
     };
     APs apMap = new APs(registeredAps);
@@ -55,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
         textPosition = (TextView) findViewById(R.id.textPosition);
         btnStartStop = (ToggleButton) findViewById(R.id.toggleButton3);
+        textCountDown= findViewById(R.id.textCountDown);
+
         btnStartStop.setChecked(false);
         btnStartStop.setTextOff("Start Scan");
         btnStartStop.setTextOn("Stop Scan");
@@ -68,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 Log.d("Debug","Running");
                 boolean status = wifiScanReceiver.startScan();
+
+                timer.start();
                 Log.d("Debug","Status: "+ String.valueOf(status));
                 if(status)
                     Toast.makeText(getApplicationContext(), "Started WiFi broadcast", Toast.LENGTH_SHORT).show();
@@ -79,6 +87,20 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+
+        //Criar contador
+        timer = new CountDownTimer(timeInterval,tickInterval) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                textCountDown.setText( String.valueOf(Math.round(millisUntilFinished/1000)));
+            }
+
+            @Override
+            public void onFinish() {
+                textCountDown.setText("!");
+                this.cancel();
+            }
+        };
         btnStartStop.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d("Debug","Toggle: " + String.valueOf(isChecked));
@@ -87,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     mHandler.removeCallbacks(mRunnable);
+                    timer.onFinish();
                 }
             }
         });
@@ -104,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         String p = uiLink.getValue().toString();
-                        Log.d("Estimation", p);
+                        Log.d("debug", p);
                         textPosition.setText(p);
                     }
                 });
@@ -129,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         wifiScanReceiver.stopScan();
+        timer.onFinish();
         mHandler.removeCallbacks(mRunnable);
         btnStartStop.setChecked(false);
     }

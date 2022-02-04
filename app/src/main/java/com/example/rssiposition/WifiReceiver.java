@@ -65,15 +65,13 @@ public class WifiReceiver extends BroadcastReceiver {
                     apMap.get(bssid).setRssi(rssi);
             }
             APs availableAps = apMap.getAvailableAPs();
-            if (availableAps.size() >= 3){
-
-
+            if (availableAps.size() > 3){
                 estimation = estimator.getEstimation(availableAps);
                 uiLink.postValue(estimation);
             }
             else{
-                Log.w("Warning","It is no possible to get an estimation with "+String.valueOf(availableAps.size()) + " APs.");
-                Toast.makeText(context, "Not enough APs available: 4 needed " + String.valueOf(availableAps.size()) +"provided", Toast.LENGTH_SHORT).show();
+                Log.d("Debug","It is no possible to get an estimation with "+String.valueOf(availableAps.size()) + " APs.");
+                Toast.makeText(context, "Not enough APs available: 4 needed " + String.valueOf(availableAps.size()) +" provided", Toast.LENGTH_SHORT).show();
             }
             apMap.resetAps();
 
